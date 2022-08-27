@@ -1,4 +1,5 @@
 #include "Characters/BaseCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ABaseCharacter::ABaseCharacter()
 {
@@ -8,12 +9,6 @@ ABaseCharacter::ABaseCharacter()
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
-
-void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-

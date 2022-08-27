@@ -17,8 +17,12 @@ protected:
 
 	virtual void BeginPlay() override;
 
-public:	
+public:
 
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	float WalkSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
+	float RunSpeed;
 
 };
