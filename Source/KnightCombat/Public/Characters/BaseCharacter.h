@@ -19,6 +19,9 @@ protected:
 
 public:
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	class UHealthComponent* HealthComponent;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
 	float WalkSpeed;
 
