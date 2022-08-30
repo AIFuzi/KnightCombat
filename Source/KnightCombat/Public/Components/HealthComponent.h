@@ -28,7 +28,10 @@ public:
 	float CurrentHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Health")
-	float RegenStaminaRate;
+	float RegenHealthRate;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Health")
+	float RegenHealthStartDelay;
 
 	UPROPERTY(BlueprintAssignable, Category="Health")
 	FHealthEnded OnHealthEnded;
