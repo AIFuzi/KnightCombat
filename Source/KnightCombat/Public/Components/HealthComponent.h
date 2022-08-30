@@ -39,9 +39,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Health")
 	void GetDamage(float Damage);
 
+	UFUNCTION(BlueprintCallable, Category="Health")
+	void StartRegenHealth();
+
+	UFUNCTION(BlueprintCallable, Category="Health")
+	void StopRegenHealth();
+
 private:
+
+	FTimerHandle RegenHealthTimer;
+	FTimerHandle RegenStaminaTimer;
 
 	UFUNCTION(Unreliable, Server, WithValidation, Category="Health")
 	void Server_GetDamage(float Damage);
+
+	UFUNCTION(Unreliable, Server, WithValidation, Category="Health")
+	void Server_RegenHealth();
 		
 };
