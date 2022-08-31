@@ -2,6 +2,7 @@
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 APlayerCharacter::APlayerCharacter()
@@ -14,6 +15,13 @@ APlayerCharacter::APlayerCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("PlayerCamera"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
+}
+
+void APlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	HealthComponent->OnStaminaEnded.AddDynamic(this, &APlayerCharacter::StopSprint);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -63,12 +71,17 @@ void APlayerCharacter::Turn(float Value)
 
 void APlayerCharacter::StartSprint()
 {
-	Server_StartSprint();
+	if(HealthComponent->CurrentStamina >= HealthComponent->StaminaForSprint && GetVelocity().Length() > 0.f)
+	{
+		Server_StartSprint();
+		HealthComponent->StartUseStamina();
+	}
 }
 
 void APlayerCharacter::StopSprint()
 {
 	Server_StopSprint();
+	HealthComponent->StopUseStamina();
 }
 
 void APlayerCharacter::Server_StartSprint_Implementation()

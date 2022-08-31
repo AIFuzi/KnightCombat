@@ -51,6 +51,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stamina")
 	float RegenStaminaStartDelay;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stamina")
+	float StaminaForSprint;
 
 	UPROPERTY(BlueprintAssignable, Category="Stamina")
 	FHealthEnded OnStaminaEnded;

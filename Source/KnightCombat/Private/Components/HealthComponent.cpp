@@ -63,12 +63,12 @@ bool UHealthComponent::Server_RegenHealth_Validate() { return true; }
 
 void UHealthComponent::StartUseStamina()
 {
-//	GetWorld()->GetTimerManager().SetTimer()
+	if(CurrentStamina >= StaminaForSprint) GetWorld()->GetTimerManager().SetTimer(UseStaminaTimer, this, &UHealthComponent::Server_UseStamina, SprintStaminaRate, true, 0.f);
 }
 
 void UHealthComponent::StopUseStamina()
 {
-	
+	GetWorld()->GetTimerManager().ClearTimer(UseStaminaTimer);
 }
 
 void UHealthComponent::UseStaminaValue(float Value)
@@ -119,7 +119,18 @@ bool UHealthComponent::Server_RegenStamina_Validate() { return true; }
 
 void UHealthComponent::Server_UseStamina_Implementation()
 {
-	
+	if(GetOwnerRole() == ROLE_Authority)
+	{
+		CurrentStamina--;
+		CurrentStamina = FMath::Max(CurrentStamina, 0.f);
+
+		if(CurrentStamina <= 0.f)
+		{
+			StopUseStamina();
+			OnStaminaEnded.Broadcast();
+		}
+		else StartRegenStamina();
+	}
 }
 
 bool UHealthComponent::Server_UseStamina_Validate() { return true; }
