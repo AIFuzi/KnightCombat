@@ -1,9 +1,12 @@
 #include "Characters/BaseCharacter.h"
+
+#include "Components/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 ABaseCharacter::ABaseCharacter()
 {
-
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	if(HealthComponent) HealthComponent->SetIsReplicated(true);
 }
 
 void ABaseCharacter::BeginPlay()

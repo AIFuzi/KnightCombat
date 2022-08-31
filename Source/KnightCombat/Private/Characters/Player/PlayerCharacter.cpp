@@ -1,6 +1,8 @@
 #include "Characters/Player/PlayerCharacter.h"
+
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 APlayerCharacter::APlayerCharacter()
@@ -15,6 +17,13 @@ APlayerCharacter::APlayerCharacter()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 }
 
+void APlayerCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	HealthComponent->OnStaminaEnded.AddDynamic(this, &APlayerCharacter::StopSprint);
+}
+
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -23,6 +32,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn", this, &APlayerCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::LookUp);
+
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerCharacter::StartSprint);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerCharacter::StopSprint);
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -56,3 +68,43 @@ void APlayerCharacter::Turn(float Value)
 {
 	AddControllerYawInput(Value * MouseSensitivity);
 }
+
+void APlayerCharacter::StartSprint()
+{
+	if(HealthComponent->CurrentStamina >= HealthComponent->StaminaForSprint && GetVelocity().Length() > 0.f)
+	{
+		Server_StartSprint();
+		HealthComponent->StartUseStamina();
+	}
+}
+
+void APlayerCharacter::StopSprint()
+{
+	Server_StopSprint();
+	HealthComponent->StopUseStamina();
+}
+
+void APlayerCharacter::Server_StartSprint_Implementation()
+{
+	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	Client_UpdateCharacterSpeed(RunSpeed);
+}
+
+bool APlayerCharacter::Server_StartSprint_Validate() { return true; }
+
+void APlayerCharacter::Server_StopSprint_Implementation()
+{
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	Client_UpdateCharacterSpeed(WalkSpeed);
+}
+
+bool APlayerCharacter::Server_StopSprint_Validate() { return true; }
+
+void APlayerCharacter::Client_UpdateCharacterSpeed_Implementation(float Speed)
+{
+	GetCharacterMovement()->MaxWalkSpeed = Speed;
+}
+
+bool APlayerCharacter::Client_UpdateCharacterSpeed_Validate(float Speed) { return true; }
+
+
