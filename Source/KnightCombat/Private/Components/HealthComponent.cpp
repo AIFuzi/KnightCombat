@@ -52,7 +52,7 @@ void UHealthComponent::Server_RegenHealth_Implementation()
 {
 	if(GetOwnerRole() == ROLE_Authority)
 	{
-		CurrentHealth = CurrentHealth + 1.f;
+		CurrentHealth++;
 		CurrentHealth = FMath::Min(CurrentHealth, MaxHealth);
 		
 		if(CurrentHealth >= MaxHealth) StopRegenHealth();
@@ -108,7 +108,10 @@ void UHealthComponent::Server_RegenStamina_Implementation()
 {
 	if(GetOwnerRole() == ROLE_Authority)
 	{
-		
+		CurrentStamina++;
+		CurrentStamina = FMath::Min(CurrentStamina, MaxStamina);
+
+		if(CurrentStamina >= MaxStamina) StopRegenStamina();
 	}
 }
 
