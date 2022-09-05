@@ -13,6 +13,14 @@ public:
 
 	UWeaponCombatComponent();
 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="TEST")
+	int TraceValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="TEST")
+	bool DrawDebugInfo;
+
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void CreateWeaponSword(TSubclassOf<class ABaseWeaponSword> WeaponClass);
 
@@ -20,5 +28,8 @@ private:
 
 	UFUNCTION(Unreliable, Server, WithValidation, Category="Weapon")
 	void Server_CreateWeaponSword(TSubclassOf<class ABaseWeaponSword> WeaponClass);
+
+	UPROPERTY()
+	ABaseWeaponSword* CurrentWeaponSword;
 		
 };
