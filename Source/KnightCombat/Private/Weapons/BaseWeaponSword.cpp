@@ -1,6 +1,5 @@
 #include "Weapons/BaseWeaponSword.h"
 
-#include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Characters/BaseCharacter.h"

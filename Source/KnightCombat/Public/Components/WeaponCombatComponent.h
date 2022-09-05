@@ -4,7 +4,6 @@
 #include "Components/ActorComponent.h"
 #include "WeaponCombatComponent.generated.h"
 
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class KNIGHTCOMBAT_API UWeaponCombatComponent : public UActorComponent
 {

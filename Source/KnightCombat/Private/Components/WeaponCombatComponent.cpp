@@ -1,5 +1,6 @@
 #include "Components/WeaponCombatComponent.h"
 
+#include "Characters/BaseCharacter.h"
 #include "Engine/World.h"
 #include "Weapons/BaseWeaponSword.h"
 
@@ -15,11 +16,29 @@ void UWeaponCombatComponent::CreateWeaponSword(TSubclassOf<ABaseWeaponSword> Wea
 
 void UWeaponCombatComponent::Server_CreateWeaponSword_Implementation(TSubclassOf<ABaseWeaponSword> WeaponClass)
 {
-	FVector SpawnLoc(0.f, 0.f, 0.f);
-	FRotator SpawnRot(0.f, 0.f, 0.f);
+	if(GetOwnerRole() == ROLE_Authority)
+	{
+		if(WeaponClass)
+		{
+			const FVector SpawnLoc(0.f, 0.f, 0.f);
+			const FRotator SpawnRot(0.f, 0.f, 0.f);
 
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			FActorSpawnParameters SpawnParameters;
+			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			if(ABaseWeaponSword* SpawnedWeapon = GetWorld()->SpawnActor<ABaseWeaponSword>(WeaponClass, SpawnLoc, SpawnRot, SpawnParameters))
+			{
+				if(ABaseCharacter* WeaponOwner = Cast<ABaseCharacter>(GetOwner()))
+				{
+					SpawnedWeapon->WeaponOwner = WeaponOwner;
+					SpawnedWeapon->OnRep_WeaponOwner();
+
+					if(USceneComponent* OwnerMesh = Cast<USceneComponent>(WeaponOwner->GetMesh()))
+						SpawnedWeapon->AttachToComponent(OwnerMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "SK_Sword");
+				}
+			}
+		}
+	}
 
 	
 }
