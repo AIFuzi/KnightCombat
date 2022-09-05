@@ -21,6 +21,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
 	class UHealthComponent* HealthComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components")
+	class UWeaponCombatComponent* WeaponCombatComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Movement")
 	float WalkSpeed;
