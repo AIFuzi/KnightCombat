@@ -8,9 +8,6 @@ ABaseCharacter::ABaseCharacter()
 {
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 	if(HealthComponent) HealthComponent->SetIsReplicated(true);
-
-	WeaponCombatComponent = CreateDefaultSubobject<UWeaponCombatComponent>(TEXT("WeaponCombatComponent"));
-	if(WeaponCombatComponent) HealthComponent->SetIsReplicated(true);
 }
 
 void ABaseCharacter::BeginPlay()
