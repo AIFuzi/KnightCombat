@@ -21,7 +21,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Weapon")
 	class UBoxComponent* SwordCollision;
 
-	UPROPERTY(VisibleDefaultsOnly, ReplicatedUsing = OnRep_WeaponOwner, Category="Weapon")
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponOwner)
 	class ABaseCharacter* WeaponOwner;
 
 	UFUNCTION()
