@@ -2,6 +2,7 @@
 
 #include "Characters/BaseCharacter.h"
 #include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
 #include "Weapons/BaseWeaponSword.h"
 #include "Net/UnrealNetwork.h"
 
@@ -80,22 +81,7 @@ void UWeaponCombatComponent::StopSwordAttack()
 
 void UWeaponCombatComponent::Server_SwordAttackTrace_Implementation()
 {
-	if(GetOwnerRole() == ROLE_Authority)
-	{
-		if(LastTraceHitLoc.Num() > 0)
-		{
-			for(int i = 0; i <= TraceValue; i++)
-			{
-				FVector SocketStartLoc = CurrentWeaponSword->WeaponMesh->GetSocketLocation(SocketStartName);
-				FVector SocketEndLoc = CurrentWeaponSword->WeaponMesh->GetSocketLocation(SocketEndName);
-				float LerpAlpha = static_cast<float>(i) / static_cast<float>(TraceValue);
-				FVector LerpVec = FMath::Lerp(SocketStartLoc, SocketEndLoc, LerpAlpha);
-
-				if(DrawDebugInfo) Multicast_DrawDebugInfo(LerpVec,  LastTraceHitLoc[i], LerpAlpha);
-				LastTraceHitLoc[i] = LerpVec;
-			}
-		}
-	}
+	Multicast_SwordAttackTrace();
 }
 
 bool UWeaponCombatComponent::Server_SwordAttackTrace_Validate() { return true; }
@@ -114,7 +100,36 @@ bool UWeaponCombatComponent::Multicast_DrawDebugInfo_Validate(FVector LerpVecVal
 
 void UWeaponCombatComponent::Multicast_SwordAttackTrace_Implementation()
 {
-	
+	if(LastTraceHitLoc.Num() > 0)
+	{
+		for(int i = 0; i <= TraceValue; i++)
+		{
+			FVector SocketStartLoc = CurrentWeaponSword->WeaponMesh->GetSocketLocation(SocketStartName);
+			FVector SocketEndLoc = CurrentWeaponSword->WeaponMesh->GetSocketLocation(SocketEndName);
+			float LerpAlpha = static_cast<float>(i) / static_cast<float>(TraceValue);
+			FVector LerpVec = FMath::Lerp(SocketStartLoc, SocketEndLoc, LerpAlpha);
+
+			FHitResult HitResult;
+			FCollisionQueryParams QueryParams;
+			QueryParams.AddIgnoredActor(GetOwner());
+			QueryParams.AddIgnoredActor(CurrentWeaponSword);
+
+			FCollisionObjectQueryParams CollisionObjectQueryParams;
+			CollisionObjectQueryParams = FCollisionObjectQueryParams::AllObjects;
+
+			if(GetWorld()->LineTraceSingleByChannel(HitResult, LerpVec, LastTraceHitLoc[i], ECC_Pawn, QueryParams))
+			{
+				DrawDebugBox(GetWorld(), HitResult.Location, FVector(5.f, 5.f, 5.f), FColor::Cyan, false, 5.f, 0, 0.3f);
+
+				TSubclassOf<UDamageType> DamageTypeClass;
+				DamageTypeClass = UDamageType::StaticClass();
+				UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetOwner()->GetInstigatorController(), GetOwner(), DamageTypeClass);
+			}
+				
+			if(DrawDebugInfo) Multicast_DrawDebugInfo(LerpVec,  LastTraceHitLoc[i], LerpAlpha);
+			LastTraceHitLoc[i] = LerpVec;
+		}
+	}
 }
 
 bool UWeaponCombatComponent::Multicast_SwordAttackTrace_Validate() { return true; }
