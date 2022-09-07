@@ -13,8 +13,6 @@ public:
 
 	APlayerCharacter();
 
-	virtual void BeginPlay() override;
-
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Character")

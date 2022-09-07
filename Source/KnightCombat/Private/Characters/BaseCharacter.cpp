@@ -1,6 +1,7 @@
 #include "Characters/BaseCharacter.h"
 
 #include "Components/HealthComponent.h"
+#include "Components/WeaponCombatComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 ABaseCharacter::ABaseCharacter()

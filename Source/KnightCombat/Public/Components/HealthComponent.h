@@ -56,7 +56,7 @@ public:
 	float StaminaForSprint;
 
 	UPROPERTY(BlueprintAssignable, Category="Stamina")
-	FHealthEnded OnStaminaEnded;
+	FStaminaEnded OnStaminaEnded;
 
 	UFUNCTION(BlueprintCallable, Category="Health")
 	void GetDamage(float Damage);

@@ -17,13 +17,6 @@ APlayerCharacter::APlayerCharacter()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 }
 
-void APlayerCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
-	HealthComponent->OnStaminaEnded.AddDynamic(this, &APlayerCharacter::StopSprint);
-}
-
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -71,23 +64,24 @@ void APlayerCharacter::Turn(float Value)
 
 void APlayerCharacter::StartSprint()
 {
-	if(HealthComponent->CurrentStamina >= HealthComponent->StaminaForSprint && GetVelocity().Length() > 0.f)
-	{
-		Server_StartSprint();
-		HealthComponent->StartUseStamina();
-	}
+	Server_StartSprint();
 }
 
 void APlayerCharacter::StopSprint()
 {
 	Server_StopSprint();
-	HealthComponent->StopUseStamina();
 }
 
 void APlayerCharacter::Server_StartSprint_Implementation()
 {
-	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-	Client_UpdateCharacterSpeed(RunSpeed);
+	if(HealthComponent->CurrentStamina >= HealthComponent->StaminaForSprint && GetVelocity().Length() > 0.f)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+		Client_UpdateCharacterSpeed(RunSpeed);
+
+		HealthComponent->StartUseStamina();
+		HealthComponent->OnStaminaEnded.AddDynamic(this, &APlayerCharacter::Server_StopSprint);
+	}
 }
 
 bool APlayerCharacter::Server_StartSprint_Validate() { return true; }
@@ -96,6 +90,8 @@ void APlayerCharacter::Server_StopSprint_Implementation()
 {
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	Client_UpdateCharacterSpeed(WalkSpeed);
+
+	HealthComponent->StopUseStamina();
 }
 
 bool APlayerCharacter::Server_StopSprint_Validate() { return true; }
