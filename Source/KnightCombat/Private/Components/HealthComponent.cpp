@@ -26,13 +26,16 @@ void UHealthComponent::Server_GetDamage_Implementation(float Damage)
 {
 	if(GetOwnerRole() == ROLE_Authority)
 	{
-		StopRegenHealth();
+		if(!bIsInvisibleActivate)
+		{
+			StopRegenHealth();
 		
-		CurrentHealth = CurrentHealth - Damage;
-		CurrentHealth = FMath::Max(CurrentHealth, 0.f);
+			CurrentHealth = CurrentHealth - Damage;
+			CurrentHealth = FMath::Max(CurrentHealth, 0.f);
 
-		if(CurrentHealth <= 0.f) OnHealthEnded.Broadcast();
-		else StartRegenHealth();
+			if(CurrentHealth <= 0.f) OnHealthEnded.Broadcast();
+			else StartRegenHealth();
+		}
 	}
 }
 
@@ -46,6 +49,16 @@ void UHealthComponent::StartRegenHealth()
 void UHealthComponent::StopRegenHealth()
 {
 	GetWorld()->GetTimerManager().ClearTimer(RegenHealthTimer);
+}
+
+void UHealthComponent::SetInvisibleMode(bool ActivateInvisible)
+{
+	Server_SetInvisibleMode(ActivateInvisible);
+}
+
+void UHealthComponent::Server_SetInvisibleMode_Implementation(bool ActivateInvisible)
+{
+	bIsInvisibleActivate = ActivateInvisible;
 }
 
 void UHealthComponent::Server_RegenHealth_Implementation()
