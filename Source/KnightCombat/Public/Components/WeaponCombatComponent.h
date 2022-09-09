@@ -63,9 +63,6 @@ private:
 	ABaseWeaponSword* CurrentWeaponSword;
 
 	UPROPERTY()
-	class ABaseCharacter* CharOwner;
-
-	UPROPERTY()
 	TArray<AActor*> HitActors;
 	
 	FTimerHandle SwordAttackTimer;

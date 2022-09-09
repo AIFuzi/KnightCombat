@@ -100,6 +100,8 @@ void UWeaponCombatComponent::Multicast_SwordAttackTrace_Implementation()
 {
 	if(LastTraceHitLoc.Num() > 0)
 	{
+		bool bCanBlockAttack = false;
+		
 		for(int i = 0; i <= TraceValue; i++)
 		{
 			FVector SocketStartLoc = CurrentWeaponSword->WeaponMesh->GetSocketLocation(SocketStartName);
@@ -111,18 +113,18 @@ void UWeaponCombatComponent::Multicast_SwordAttackTrace_Implementation()
 			FCollisionQueryParams QueryParams;
 			QueryParams.AddIgnoredActor(GetOwner());
 			QueryParams.AddIgnoredActor(CurrentWeaponSword);
-
+			
 			if(GetWorld()->LineTraceSingleByChannel(HitResult, LerpVec, LastTraceHitLoc[i], ECC_GameTraceChannel1, QueryParams))
 			{
-				// TSubclassOf<UDamageType> DamageTypeClass;
-				// DamageTypeClass = UDamageType::StaticClass();
-				// UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetOwner()->GetInstigatorController(), GetOwner(), DamageTypeClass);
-
 				if(!HitActors.Contains(HitResult.GetActor()))
 				{
 					DrawDebugBox(GetWorld(), HitResult.Location, FVector(5.f, 5.f, 5.f), FColor::Cyan, false, 5.f, 0, 0.3f);
+					
+					TSubclassOf<UDamageType> DamageTypeClass;
+					DamageTypeClass = UDamageType::StaticClass();
+					UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetOwner()->GetInstigatorController(), GetOwner(), DamageTypeClass);
+
 					HitActors.AddUnique(HitResult.GetActor());
-					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, HitResult.GetActor()->GetName());
 				}
 			}
 				
