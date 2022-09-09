@@ -77,6 +77,7 @@ void UWeaponCombatComponent::StopTraceSwordAttack()
 	GetWorld()->GetTimerManager().ClearTimer(SwordAttackTimer);
 
 	LastTraceHitLoc.Empty();
+	HitActors.Empty();
 }
 
 void UWeaponCombatComponent::Server_SwordAttackTrace_Implementation()
@@ -113,13 +114,16 @@ void UWeaponCombatComponent::Multicast_SwordAttackTrace_Implementation()
 
 			if(GetWorld()->LineTraceSingleByChannel(HitResult, LerpVec, LastTraceHitLoc[i], ECC_GameTraceChannel1, QueryParams))
 			{
-				DrawDebugBox(GetWorld(), HitResult.Location, FVector(5.f, 5.f, 5.f), FColor::Cyan, false, 5.f, 0, 0.3f);
+				// TSubclassOf<UDamageType> DamageTypeClass;
+				// DamageTypeClass = UDamageType::StaticClass();
+				// UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetOwner()->GetInstigatorController(), GetOwner(), DamageTypeClass);
 
-				TSubclassOf<UDamageType> DamageTypeClass;
-				DamageTypeClass = UDamageType::StaticClass();
-				UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetOwner()->GetInstigatorController(), GetOwner(), DamageTypeClass);
-
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, HitResult.GetActor()->GetName());
+				if(!HitActors.Contains(HitResult.GetActor()))
+				{
+					DrawDebugBox(GetWorld(), HitResult.Location, FVector(5.f, 5.f, 5.f), FColor::Cyan, false, 5.f, 0, 0.3f);
+					HitActors.AddUnique(HitResult.GetActor());
+					GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, HitResult.GetActor()->GetName());
+				}
 			}
 				
 			if(DrawDebugInfo) Multicast_DrawDebugInfo(LerpVec,  LastTraceHitLoc[i], LerpAlpha);

@@ -65,11 +65,12 @@ private:
 	UPROPERTY()
 	class ABaseCharacter* CharOwner;
 
-	TArray<FVector> LastTraceHitLoc;
-
+	UPROPERTY()
+	TArray<AActor*> HitActors;
+	
 	FTimerHandle SwordAttackTimer;
 	FTimerHandle CooldownTimer;
-
 	
+	TArray<FVector> LastTraceHitLoc;	
 		
 };
