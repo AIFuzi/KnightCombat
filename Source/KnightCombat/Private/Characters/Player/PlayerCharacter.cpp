@@ -84,8 +84,6 @@ void APlayerCharacter::Server_StartSprint_Implementation()
 	}
 }
 
-bool APlayerCharacter::Server_StartSprint_Validate() { return true; }
-
 void APlayerCharacter::Server_StopSprint_Implementation()
 {
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
@@ -94,13 +92,7 @@ void APlayerCharacter::Server_StopSprint_Implementation()
 	HealthComponent->StopUseStamina();
 }
 
-bool APlayerCharacter::Server_StopSprint_Validate() { return true; }
-
 void APlayerCharacter::Client_UpdateCharacterSpeed_Implementation(float Speed)
 {
 	GetCharacterMovement()->MaxWalkSpeed = Speed;
 }
-
-bool APlayerCharacter::Client_UpdateCharacterSpeed_Validate(float Speed) { return true; }
-
-

@@ -28,16 +28,28 @@ public:
 	FName SocketEndName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordSetup")
+	FName SocketWeaponSpawnName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordSetup")
 	float SwordTracingRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordAnimations")
+	UAnimMontage* AttackAnimMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordAnimations")
+	UAnimMontage* BlockAttackImpactAnimMontage;
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void CreateWeaponSword(TSubclassOf<class ABaseWeaponSword> WeaponClass);
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void StartSwordAttack();
+	void AttackSword();
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void StopSwordAttack();
+	void StartTraceSwordAttack();
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void StopTraceSwordAttack();
 
 	UFUNCTION(BlueprintPure, Category="Weapon")
 	ABaseWeaponSword* GetCurrentWeaponSword() const;
@@ -56,17 +68,25 @@ private:
 	UFUNCTION(Unreliable, NetMulticast, WithValidation, Category="Weapon")
 	void Multicast_DrawDebugInfo(FVector LerpVecVal, FVector EndLoc, float LerpVal);
 
+	UFUNCTION(Unreliable, Server, Category="Weapon")
+	void Server_AttackSword();
+
+	UFUNCTION(Unreliable, NetMulticast, Category="Weapon")
+	void Multicast_AttackSword();
+
 	UPROPERTY(Replicated)
 	ABaseWeaponSword* CurrentWeaponSword;
 
 	UPROPERTY()
-	class ABaseCharacter* CharOwner;
-
-	TArray<FVector> LastTraceHitLoc;
-
+	TArray<AActor*> HitActors;
+	
 	FTimerHandle SwordAttackTimer;
 	FTimerHandle CooldownTimer;
+	
+	TArray<FVector> LastTraceHitLoc;
+	bool bIsAttackCooldown;
 
+	void ClearCooldown();
 	
 		
 };
