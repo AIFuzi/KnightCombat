@@ -28,16 +28,19 @@ public:
 	FName SocketEndName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordSetup")
+	FName SocketWeaponSpawnName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordSetup")
 	float SwordTracingRate;
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void CreateWeaponSword(TSubclassOf<class ABaseWeaponSword> WeaponClass);
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void StartSwordAttack();
+	void StartTraceSwordAttack();
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void StopSwordAttack();
+	void StopTraceSwordAttack();
 
 	UFUNCTION(BlueprintPure, Category="Weapon")
 	ABaseWeaponSword* GetCurrentWeaponSword() const;

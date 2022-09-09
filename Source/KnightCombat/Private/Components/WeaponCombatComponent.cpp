@@ -8,7 +8,7 @@
 
 UWeaponCombatComponent::UWeaponCombatComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	
 }
 
 void UWeaponCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -45,7 +45,7 @@ void UWeaponCombatComponent::Server_CreateWeaponSword_Implementation(TSubclassOf
 					CurrentWeaponSword->OnRep_WeaponOwner();
 
 					if(USceneComponent* OwnerMesh = Cast<USceneComponent>(WeaponOwner->GetMesh()))
-						CurrentWeaponSword->AttachToComponent(OwnerMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "SK_Sword");
+						CurrentWeaponSword->AttachToComponent(OwnerMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, SocketWeaponSpawnName);
 				}
 			}
 		}
@@ -54,7 +54,7 @@ void UWeaponCombatComponent::Server_CreateWeaponSword_Implementation(TSubclassOf
 
 bool UWeaponCombatComponent::Server_CreateWeaponSword_Validate(TSubclassOf<ABaseWeaponSword> WeaponClass) { return true; }
 
-void UWeaponCombatComponent::StartSwordAttack()
+void UWeaponCombatComponent::StartTraceSwordAttack()
 {
 	if(CurrentWeaponSword)
 	{
@@ -72,7 +72,7 @@ void UWeaponCombatComponent::StartSwordAttack()
 	GetWorld()->GetTimerManager().SetTimer(SwordAttackTimer, this, &UWeaponCombatComponent::Server_SwordAttackTrace, SwordTracingRate, true, -1.f);
 }
 
-void UWeaponCombatComponent::StopSwordAttack()
+void UWeaponCombatComponent::StopTraceSwordAttack()
 {
 	GetWorld()->GetTimerManager().ClearTimer(SwordAttackTimer);
 
@@ -91,9 +91,6 @@ void UWeaponCombatComponent::Multicast_DrawDebugInfo_Implementation(FVector Lerp
 	DrawDebugSphere(GetWorld(), LerpVecVal, 5.f, 12, FColor::Green, false, SwordTracingRate, 0, 0.f);
 	DrawDebugString(GetWorld(), LerpVecVal, FString::SanitizeFloat(LerpVal), nullptr, FColor::Red, SwordTracingRate, false, 1.f);
 	DrawDebugLine(GetWorld(), LerpVecVal, EndLoc, FColor::Red, false, 1.f, 0, 1.f);
-
-	
-	//DrawDebugSphere(GetWorld(), LerpVecVal, 5.f, 12, FColor::Green, false, 0.f, 0, 1.f);
 }
 
 bool UWeaponCombatComponent::Multicast_DrawDebugInfo_Validate(FVector LerpVecVal, FVector EndLoc, float LerpVal) { return true; }
@@ -114,16 +111,15 @@ void UWeaponCombatComponent::Multicast_SwordAttackTrace_Implementation()
 			QueryParams.AddIgnoredActor(GetOwner());
 			QueryParams.AddIgnoredActor(CurrentWeaponSword);
 
-			FCollisionObjectQueryParams CollisionObjectQueryParams;
-			CollisionObjectQueryParams = FCollisionObjectQueryParams::AllObjects;
-
-			if(GetWorld()->LineTraceSingleByChannel(HitResult, LerpVec, LastTraceHitLoc[i], ECC_Pawn, QueryParams))
+			if(GetWorld()->LineTraceSingleByChannel(HitResult, LerpVec, LastTraceHitLoc[i], ECC_GameTraceChannel1, QueryParams))
 			{
 				DrawDebugBox(GetWorld(), HitResult.Location, FVector(5.f, 5.f, 5.f), FColor::Cyan, false, 5.f, 0, 0.3f);
 
 				TSubclassOf<UDamageType> DamageTypeClass;
 				DamageTypeClass = UDamageType::StaticClass();
 				UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetOwner()->GetInstigatorController(), GetOwner(), DamageTypeClass);
+
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, HitResult.GetActor()->GetName());
 			}
 				
 			if(DrawDebugInfo) Multicast_DrawDebugInfo(LerpVec,  LastTraceHitLoc[i], LerpAlpha);
