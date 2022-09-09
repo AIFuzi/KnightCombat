@@ -2,6 +2,7 @@
 
 #include "Characters/BaseCharacter.h"
 #include "Engine/World.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Weapons/BaseWeaponSword.h"
 #include "Net/UnrealNetwork.h"
@@ -116,20 +117,35 @@ void UWeaponCombatComponent::Multicast_SwordAttackTrace_Implementation()
 			
 			if(GetWorld()->LineTraceSingleByChannel(HitResult, LerpVec, LastTraceHitLoc[i], ECC_GameTraceChannel1, QueryParams))
 			{
-				if(!HitActors.Contains(HitResult.GetActor()))
+				if(Cast<ABaseCharacter>(HitResult.GetActor()))
 				{
-					DrawDebugBox(GetWorld(), HitResult.Location, FVector(5.f, 5.f, 5.f), FColor::Cyan, false, 5.f, 0, 0.3f);
+					if(!HitActors.Contains(HitResult.GetActor()))
+					{
+						DrawDebugBox(GetWorld(), HitResult.Location, FVector(5.f, 5.f, 5.f), FColor::Cyan, false, 5.f, 0, 0.3f);
 					
-					TSubclassOf<UDamageType> DamageTypeClass;
-					DamageTypeClass = UDamageType::StaticClass();
-					UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetOwner()->GetInstigatorController(), GetOwner(), DamageTypeClass);
+						TSubclassOf<UDamageType> DamageTypeClass;
+						DamageTypeClass = UDamageType::StaticClass();
+						UGameplayStatics::ApplyDamage(HitResult.GetActor(), 10.f, GetOwner()->GetInstigatorController(), GetOwner(), DamageTypeClass);
 
-					HitActors.AddUnique(HitResult.GetActor());
+						HitActors.AddUnique(HitResult.GetActor());
+					}	
+				}
+				else
+				{
+					bCanBlockAttack = true;
+					break;
 				}
 			}
 				
 			if(DrawDebugInfo) Multicast_DrawDebugInfo(LerpVec,  LastTraceHitLoc[i], LerpAlpha);
 			LastTraceHitLoc[i] = LerpVec;
+		}
+
+		if(bCanBlockAttack)
+		{
+			if(ABaseCharacter* CharOwner = Cast<ABaseCharacter>(GetOwner()))
+				CharOwner->PlayAnimMontage(BlockAttackImpactAnimMontage);
+			StopTraceSwordAttack();
 		}
 	}
 }
@@ -139,4 +155,37 @@ bool UWeaponCombatComponent::Multicast_SwordAttackTrace_Validate() { return true
 ABaseWeaponSword* UWeaponCombatComponent::GetCurrentWeaponSword() const
 {
 	return CurrentWeaponSword;
+}
+
+void UWeaponCombatComponent::AttackSword()
+{
+	Server_AttackSword();
+}
+
+void UWeaponCombatComponent::Server_AttackSword_Implementation()
+{
+	Multicast_AttackSword();	
+}
+
+void UWeaponCombatComponent::Multicast_AttackSword_Implementation()
+{
+	if(!bIsAttackCooldown)
+	{
+		if(ABaseCharacter* CharOwner = Cast<ABaseCharacter>(GetOwner()))
+        {
+			CharOwner->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+        	bIsAttackCooldown = true;
+			
+        	const float CooldownRate = CharOwner->PlayAnimMontage(AttackAnimMontage);
+        	GetWorld()->GetTimerManager().SetTimer(CooldownTimer, this, &UWeaponCombatComponent::ClearCooldown, CooldownRate, false);
+        }
+	}
+}
+
+void UWeaponCombatComponent::ClearCooldown()
+{
+	GetWorld()->GetTimerManager().ClearTimer(CooldownTimer);
+
+	if(const ABaseCharacter* CharOwner = Cast<ABaseCharacter>(GetOwner())) CharOwner->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	bIsAttackCooldown = false;
 }

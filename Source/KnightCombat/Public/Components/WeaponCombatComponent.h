@@ -33,8 +33,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordSetup")
 	float SwordTracingRate;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordAnimations")
+	UAnimMontage* AttackAnimMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordAnimations")
+	UAnimMontage* BlockAttackImpactAnimMontage;
+
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void CreateWeaponSword(TSubclassOf<class ABaseWeaponSword> WeaponClass);
+
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	void AttackSword();
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void StartTraceSwordAttack();
@@ -59,6 +68,12 @@ private:
 	UFUNCTION(Unreliable, NetMulticast, WithValidation, Category="Weapon")
 	void Multicast_DrawDebugInfo(FVector LerpVecVal, FVector EndLoc, float LerpVal);
 
+	UFUNCTION(Unreliable, Server, Category="Weapon")
+	void Server_AttackSword();
+
+	UFUNCTION(Unreliable, NetMulticast, Category="Weapon")
+	void Multicast_AttackSword();
+
 	UPROPERTY(Replicated)
 	ABaseWeaponSword* CurrentWeaponSword;
 
@@ -68,6 +83,10 @@ private:
 	FTimerHandle SwordAttackTimer;
 	FTimerHandle CooldownTimer;
 	
-	TArray<FVector> LastTraceHitLoc;	
+	TArray<FVector> LastTraceHitLoc;
+	bool bIsAttackCooldown;
+
+	void ClearCooldown();
+	
 		
 };
