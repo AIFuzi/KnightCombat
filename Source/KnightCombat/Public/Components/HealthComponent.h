@@ -25,7 +25,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Health")
 	float MaxHealth;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Health")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Health")
 	float CurrentHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Health")
@@ -40,7 +40,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stamina")
 	float MaxStamina;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stamina")
 	float CurrentStamina;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Stamina")
@@ -77,7 +77,7 @@ public:
 	void StopUseStamina();
 
 	UFUNCTION(BlueprintCallable, Category="Stamina")
-	void UseStaminaValue(float Value);
+	void UseStaminaValue(float Value, bool & UseSuccess);
 
 	UFUNCTION(BlueprintCallable, Category="Stamina")
 	void StartRegenStamina();
@@ -97,16 +97,7 @@ private:
 	FTimerHandle UseStaminaTimer;
 
 	void RegenHealth();
-	
-	UFUNCTION(Unreliable, Server, Category="Health")
-	void Server_SetInvisibleMode(bool ActivateInvisible);
+	void UseStamina();
+	void RegenStamina();
 
-	UFUNCTION(Unreliable, Server, WithValidation, Category="Stamina")
-	void Server_UseStamina();
-
-	UFUNCTION(Unreliable, Server, WithValidation, Category="Stamina")
-	void Server_RegenStamina();
-
-	UFUNCTION(Unreliable, Server, WithValidation, Category="Stamina")
-	void Server_UseStaminaValue(float Value);
 };
