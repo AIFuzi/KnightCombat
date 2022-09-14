@@ -13,18 +13,15 @@ public:
 
 	ABaseWeaponSword();
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Weapon")
 	UStaticMeshComponent* WeaponMesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Weapon")
 	class UBoxComponent* SwordCollision;
 
-	UPROPERTY(ReplicatedUsing = OnRep_WeaponOwner)
-	class ABaseCharacter* WeaponOwner;
+private:
 
-	UFUNCTION()
-	void OnRep_WeaponOwner();
+	UPROPERTY()
+	class ABaseCharacter* WeaponOwner;
 	
 };
