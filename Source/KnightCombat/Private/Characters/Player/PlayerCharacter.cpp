@@ -76,4 +76,5 @@ void APlayerCharacter::StartSprint()
 void APlayerCharacter::StopSprint()
 {
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	HealthComponent->StopUseStamina();
 }

@@ -1,11 +1,11 @@
 #include "Components/WeaponCombatComponent.h"
 
+#include "TimerManager.h"
 #include "Characters/BaseCharacter.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Weapons/BaseWeaponSword.h"
-#include "Net/UnrealNetwork.h"
 
 UWeaponCombatComponent::UWeaponCombatComponent()
 {
