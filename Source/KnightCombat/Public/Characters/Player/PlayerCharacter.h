@@ -23,17 +23,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Params")
 	float MouseSensitivity = 1.f;
-
-protected:
-
-	UFUNCTION(Server, Unreliable, Category="Movement")
-	void Server_StartSprint();
-	
-	UFUNCTION(Server, Unreliable, Category="Movement")
-	void Server_StopSprint();
-
-	UFUNCTION(Client, Unreliable, Category="Movement")
-	void Client_UpdateCharacterSpeed(float Speed);
 	
 private:
 

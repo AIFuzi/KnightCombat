@@ -64,35 +64,16 @@ void APlayerCharacter::Turn(float Value)
 
 void APlayerCharacter::StartSprint()
 {
-	Server_StartSprint();
+	if(HealthComponent->CurrentStamina >= HealthComponent->StaminaForSprint && GetVelocity().Length() > 0.f)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+
+		HealthComponent->StartUseStamina();
+		HealthComponent->OnStaminaEnded.AddDynamic(this, &APlayerCharacter::StopSprint);
+	}
 }
 
 void APlayerCharacter::StopSprint()
 {
-	Server_StopSprint();
-}
-
-void APlayerCharacter::Server_StartSprint_Implementation()
-{
-	if(HealthComponent->CurrentStamina >= HealthComponent->StaminaForSprint && GetVelocity().Length() > 0.f)
-	{
-		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-		Client_UpdateCharacterSpeed(RunSpeed);
-
-		HealthComponent->StartUseStamina();
-		HealthComponent->OnStaminaEnded.AddDynamic(this, &APlayerCharacter::Server_StopSprint);
-	}
-}
-
-void APlayerCharacter::Server_StopSprint_Implementation()
-{
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	Client_UpdateCharacterSpeed(WalkSpeed);
-
-	HealthComponent->StopUseStamina();
-}
-
-void APlayerCharacter::Client_UpdateCharacterSpeed_Implementation(float Speed)
-{
-	GetCharacterMovement()->MaxWalkSpeed = Speed;
 }

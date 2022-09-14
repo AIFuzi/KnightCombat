@@ -85,6 +85,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Stamina")
 	void StopRegenStamina();
 
+	UFUNCTION(BlueprintPure, Category="Stamina")
+	bool IsInvisibleModeActivate() const;
+
 private:
 
 	bool bIsInvisibleActivate = false;
@@ -93,11 +96,7 @@ private:
 	FTimerHandle RegenStaminaTimer;
 	FTimerHandle UseStaminaTimer;
 
-	UFUNCTION(Unreliable, Server, WithValidation, Category="Health")
-	void Server_GetDamage(float Damage);
-
-	UFUNCTION(Unreliable, Server, WithValidation, Category="Health")
-	void Server_RegenHealth();
+	void RegenHealth();
 	
 	UFUNCTION(Unreliable, Server, Category="Health")
 	void Server_SetInvisibleMode(bool ActivateInvisible);

@@ -2,48 +2,29 @@
 
 #include "TimerManager.h"
 #include "Engine/World.h"
-#include "Net/UnrealNetwork.h"
 
 UHealthComponent::UHealthComponent()
 {
 	
 }
 
-void UHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(UHealthComponent, CurrentHealth);
-	DOREPLIFETIME(UHealthComponent, CurrentStamina);
-}
-
 void UHealthComponent::GetDamage(float Damage)
 {
-	Server_GetDamage(Damage);
-}
-
-void UHealthComponent::Server_GetDamage_Implementation(float Damage)
-{
-	if(GetOwnerRole() == ROLE_Authority)
+	if(!bIsInvisibleActivate)
 	{
-		if(!bIsInvisibleActivate)
-		{
-			StopRegenHealth();
+		StopRegenHealth();
 		
-			CurrentHealth = CurrentHealth - Damage;
-			CurrentHealth = FMath::Max(CurrentHealth, 0.f);
+		CurrentHealth = CurrentHealth - Damage;
+		CurrentHealth = FMath::Max(CurrentHealth, 0.f);
 
-			if(CurrentHealth <= 0.f) OnHealthEnded.Broadcast();
-			else StartRegenHealth();
-		}
+		if(CurrentHealth <= 0.f) OnHealthEnded.Broadcast();
+		else StartRegenHealth();
 	}
 }
 
-bool UHealthComponent::Server_GetDamage_Validate(float Damage) { return true; }
-
 void UHealthComponent::StartRegenHealth()
 {
-	GetWorld()->GetTimerManager().SetTimer(RegenHealthTimer, this, &UHealthComponent::Server_RegenHealth, RegenHealthRate, true, RegenHealthStartDelay);
+	GetWorld()->GetTimerManager().SetTimer(RegenHealthTimer, this, &UHealthComponent::RegenHealth, RegenHealthRate, true, RegenHealthStartDelay);
 }
 
 void UHealthComponent::StopRegenHealth()
@@ -61,18 +42,14 @@ void UHealthComponent::Server_SetInvisibleMode_Implementation(bool ActivateInvis
 	bIsInvisibleActivate = ActivateInvisible;
 }
 
-void UHealthComponent::Server_RegenHealth_Implementation()
+void UHealthComponent::RegenHealth()
 {
-	if(GetOwnerRole() == ROLE_Authority)
-	{
-		CurrentHealth++;
-		CurrentHealth = FMath::Min(CurrentHealth, MaxHealth);
+	CurrentHealth++;
+	CurrentHealth = FMath::Min(CurrentHealth, MaxHealth);
 		
-		if(CurrentHealth >= MaxHealth) StopRegenHealth();
-	}
+	if(CurrentHealth >= MaxHealth) StopRegenHealth();
 }
 
-bool UHealthComponent::Server_RegenHealth_Validate() { return true; }
 
 void UHealthComponent::StartUseStamina()
 {
@@ -147,3 +124,8 @@ void UHealthComponent::Server_UseStamina_Implementation()
 }
 
 bool UHealthComponent::Server_UseStamina_Validate() { return true; }
+
+bool UHealthComponent::IsInvisibleModeActivate() const
+{
+	return bIsInvisibleActivate;
+}
