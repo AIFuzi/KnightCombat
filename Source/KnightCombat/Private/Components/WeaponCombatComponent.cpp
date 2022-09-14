@@ -12,48 +12,29 @@ UWeaponCombatComponent::UWeaponCombatComponent()
 	
 }
 
-void UWeaponCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(UWeaponCombatComponent, CurrentWeaponSword);
-}
-
 void UWeaponCombatComponent::CreateWeaponSword(TSubclassOf<ABaseWeaponSword> WeaponClass)
 {
-	Server_CreateWeaponSword(WeaponClass);
-}
-
-void UWeaponCombatComponent::Server_CreateWeaponSword_Implementation(TSubclassOf<ABaseWeaponSword> WeaponClass)
-{
-	if(GetOwnerRole() == ROLE_Authority)
+	if(WeaponClass)
 	{
-		if(WeaponClass)
+		const FVector SpawnLoc(0.f, 0.f, 0.f);
+		const FRotator SpawnRot(0.f, 0.f, 0.f);
+
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		if(ABaseWeaponSword* SpawnedWeapon = GetWorld()->SpawnActor<ABaseWeaponSword>(WeaponClass, SpawnLoc, SpawnRot, SpawnParameters))
 		{
-			const FVector SpawnLoc(0.f, 0.f, 0.f);
-			const FRotator SpawnRot(0.f, 0.f, 0.f);
-
-			FActorSpawnParameters SpawnParameters;
-			SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-			if(ABaseWeaponSword* SpawnedWeapon = GetWorld()->SpawnActor<ABaseWeaponSword>(WeaponClass, SpawnLoc, SpawnRot, SpawnParameters))
+			if(ABaseCharacter* WeaponOwner = Cast<ABaseCharacter>(GetOwner()))
 			{
-				if(ABaseCharacter* WeaponOwner = Cast<ABaseCharacter>(GetOwner()))
-				{
-					CurrentWeaponSword = SpawnedWeapon;
+				CurrentWeaponSword = SpawnedWeapon;
 					
-					CurrentWeaponSword->WeaponOwner = WeaponOwner;
-					CurrentWeaponSword->OnRep_WeaponOwner();
+				CurrentWeaponSword->SetCharacterOwner(WeaponOwner);
 
-					if(USceneComponent* OwnerMesh = Cast<USceneComponent>(WeaponOwner->GetMesh()))
-						CurrentWeaponSword->AttachToComponent(OwnerMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, SocketWeaponSpawnName);
-				}
+				CurrentWeaponSword->AttachToComponent(WeaponOwner->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, SocketWeaponSpawnName);
 			}
 		}
 	}
 }
-
-bool UWeaponCombatComponent::Server_CreateWeaponSword_Validate(TSubclassOf<ABaseWeaponSword> WeaponClass) { return true; }
 
 void UWeaponCombatComponent::StartTraceSwordAttack()
 {
@@ -70,7 +51,7 @@ void UWeaponCombatComponent::StartTraceSwordAttack()
 		}
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(SwordAttackTimer, this, &UWeaponCombatComponent::Server_SwordAttackTrace, SwordTracingRate, true, -1.f);
+	GetWorld()->GetTimerManager().SetTimer(SwordAttackTimer, this, &UWeaponCombatComponent::SwordAttackTrace, SwordTracingRate, true, -1.f);
 }
 
 void UWeaponCombatComponent::StopTraceSwordAttack()
@@ -81,23 +62,7 @@ void UWeaponCombatComponent::StopTraceSwordAttack()
 	HitActors.Empty();
 }
 
-void UWeaponCombatComponent::Server_SwordAttackTrace_Implementation()
-{
-	Multicast_SwordAttackTrace();
-}
-
-bool UWeaponCombatComponent::Server_SwordAttackTrace_Validate() { return true; }
-
-void UWeaponCombatComponent::Multicast_DrawDebugInfo_Implementation(FVector LerpVecVal, FVector EndLoc, float LerpVal)
-{
-	DrawDebugSphere(GetWorld(), LerpVecVal, 5.f, 12, FColor::Green, false, SwordTracingRate, 0, 0.f);
-	DrawDebugString(GetWorld(), LerpVecVal, FString::SanitizeFloat(LerpVal), nullptr, FColor::Red, SwordTracingRate, false, 1.f);
-	DrawDebugLine(GetWorld(), LerpVecVal, EndLoc, FColor::Red, false, 1.f, 0, 1.f);
-}
-
-bool UWeaponCombatComponent::Multicast_DrawDebugInfo_Validate(FVector LerpVecVal, FVector EndLoc, float LerpVal) { return true; }
-
-void UWeaponCombatComponent::Multicast_SwordAttackTrace_Implementation()
+void UWeaponCombatComponent::SwordAttackTrace()
 {
 	if(LastTraceHitLoc.Num() > 0)
 	{
@@ -137,7 +102,7 @@ void UWeaponCombatComponent::Multicast_SwordAttackTrace_Implementation()
 				}
 			}
 				
-			if(DrawDebugInfo) Multicast_DrawDebugInfo(LerpVec,  LastTraceHitLoc[i], LerpAlpha);
+			// if(DrawDebugInfo) Multicast_DrawDebugInfo(LerpVec,  LastTraceHitLoc[i], LerpAlpha);
 			LastTraceHitLoc[i] = LerpVec;
 		}
 
@@ -150,8 +115,6 @@ void UWeaponCombatComponent::Multicast_SwordAttackTrace_Implementation()
 	}
 }
 
-bool UWeaponCombatComponent::Multicast_SwordAttackTrace_Validate() { return true; }
-
 ABaseWeaponSword* UWeaponCombatComponent::GetCurrentWeaponSword() const
 {
 	return CurrentWeaponSword;
@@ -159,26 +122,16 @@ ABaseWeaponSword* UWeaponCombatComponent::GetCurrentWeaponSword() const
 
 void UWeaponCombatComponent::AttackSword()
 {
-	Server_AttackSword();
-}
-
-void UWeaponCombatComponent::Server_AttackSword_Implementation()
-{
-	Multicast_AttackSword();	
-}
-
-void UWeaponCombatComponent::Multicast_AttackSword_Implementation()
-{
 	if(!bIsAttackCooldown)
 	{
 		if(ABaseCharacter* CharOwner = Cast<ABaseCharacter>(GetOwner()))
-        {
+		{
 			CharOwner->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-        	bIsAttackCooldown = true;
+			bIsAttackCooldown = true;
 			
-        	const float CooldownRate = CharOwner->PlayAnimMontage(AttackAnimMontage);
-        	GetWorld()->GetTimerManager().SetTimer(CooldownTimer, this, &UWeaponCombatComponent::ClearCooldown, CooldownRate, false);
-        }
+			const float CooldownRate = CharOwner->PlayAnimMontage(AttackAnimMontage);
+			GetWorld()->GetTimerManager().SetTimer(CooldownTimer, this, &UWeaponCombatComponent::ClearCooldown, CooldownRate, false);
+		}
 	}
 }
 

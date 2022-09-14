@@ -11,3 +11,8 @@ ABaseWeaponSword::ABaseWeaponSword()
 	SwordCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("SwordCollision"));
 	SwordCollision->SetupAttachment(WeaponMesh);
 }
+
+void ABaseWeaponSword::SetCharacterOwner(ABaseCharacter* NewOwner)
+{
+	WeaponOwner = NewOwner;
+}

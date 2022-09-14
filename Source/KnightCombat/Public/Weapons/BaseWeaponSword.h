@@ -19,9 +19,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Weapon")
 	class UBoxComponent* SwordCollision;
 
+	UFUNCTION(BlueprintCallable, Category="WeaponSetup")
+	void SetCharacterOwner(class ABaseCharacter* NewOwner);
+
+protected:
+
+	
+
 private:
 
 	UPROPERTY()
-	class ABaseCharacter* WeaponOwner;
+	ABaseCharacter* WeaponOwner;
 	
 };

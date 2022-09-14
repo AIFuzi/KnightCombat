@@ -13,8 +13,6 @@ public:
 
 	UWeaponCombatComponent();
 	
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordSetup")
 	int TraceValue;
 
@@ -34,10 +32,10 @@ public:
 	float SwordTracingRate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordAnimations")
-	UAnimMontage* AttackAnimMontage;
+	class UAnimMontage* AttackAnimMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SwordAnimations")
-	UAnimMontage* BlockAttackImpactAnimMontage;
+	class UAnimMontage* BlockAttackImpactAnimMontage;
 
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void CreateWeaponSword(TSubclassOf<class ABaseWeaponSword> WeaponClass);
@@ -55,26 +53,10 @@ public:
 	ABaseWeaponSword* GetCurrentWeaponSword() const;
 
 private:
+	
+	void SwordAttackTrace();
 
-	UFUNCTION(Unreliable, Server, WithValidation, Category="Weapon")
-	void Server_CreateWeaponSword(TSubclassOf<ABaseWeaponSword> WeaponClass);
-
-	UFUNCTION(Unreliable, Server, WithValidation, Category="Weapon")
-	void Server_SwordAttackTrace();
-
-	UFUNCTION(Unreliable, NetMulticast, WithValidation, Category="Weapon")
-	void Multicast_SwordAttackTrace();
-
-	UFUNCTION(Unreliable, NetMulticast, WithValidation, Category="Weapon")
-	void Multicast_DrawDebugInfo(FVector LerpVecVal, FVector EndLoc, float LerpVal);
-
-	UFUNCTION(Unreliable, Server, Category="Weapon")
-	void Server_AttackSword();
-
-	UFUNCTION(Unreliable, NetMulticast, Category="Weapon")
-	void Multicast_AttackSword();
-
-	UPROPERTY(Replicated)
+	UPROPERTY()
 	ABaseWeaponSword* CurrentWeaponSword;
 
 	UPROPERTY()
